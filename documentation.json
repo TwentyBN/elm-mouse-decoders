@@ -1,0 +1,48 @@
+[
+  {
+    "name": "MouseEvent",
+    "comment": " decoders for mouse events\n\n@docs Position\n\n@docs xAsPortionOf, yAsPortionOf , xAndYAsPortionsOf , xRelativeTo , yRelativeTo , xAndYRelativeTo\n\n",
+    "aliases": [
+      {
+        "name": "Position",
+        "comment": " a decoded position (relative or portional)\n",
+        "args": [],
+        "type": "{ x : Float, y : Float }"
+      }
+    ],
+    "types": [],
+    "values": [
+      {
+        "name": "xAndYAsPortionsOf",
+        "comment": " decode the mouse position as a portion of a parent element (values between 0 and 1)\n",
+        "type": "String -> Json.Decode.Decoder MouseEvent.Position"
+      },
+      {
+        "name": "xAndYRelativeTo",
+        "comment": " decode the mouse position relative to a parent element (values in px)\n",
+        "type": "String -> Json.Decode.Decoder MouseEvent.Position"
+      },
+      {
+        "name": "xAsPortionOf",
+        "comment": " decode the mouse x position as a portion of a parent element (values between 0 and 1)\n",
+        "type": "String -> Json.Decode.Decoder Float"
+      },
+      {
+        "name": "xRelativeTo",
+        "comment": " decode the mouse x position relative to a parent element (values in px)\n",
+        "type": "String -> Json.Decode.Decoder Float"
+      },
+      {
+        "name": "yAsPortionOf",
+        "comment": " decode the mouse y position as a portion of a parent element (values between 0 and 1)\n",
+        "type": "String -> Json.Decode.Decoder Float"
+      },
+      {
+        "name": "yRelativeTo",
+        "comment": " decode the mouse y position relative to a parent element (values in px)\n",
+        "type": "String -> Json.Decode.Decoder Float"
+      }
+    ],
+    "generated-with-elm-version": "0.18.0"
+  }
+]
