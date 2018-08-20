@@ -7,6 +7,8 @@ module MouseEvent
         , yRelativeTo
         , xAndYRelativeTo
         , Position
+        , ancestorWithId
+        , ancestorNode
         )
 
 {-| decoders for mouse events
@@ -49,50 +51,69 @@ type alias MousePosition =
     }
 
 
+type alias ContainerPredicate =
+    JD.Decoder Bool
+
+
 
 -- API
 
 
+ancestorWithId : String -> JD.Decoder Bool
+ancestorWithId targetId =
+    JD.field "id" JD.string |> JD.andThen (\elementId -> JD.succeed <| elementId == targetId)
+
+
+ancestorWithData : String -> String -> JD.Decoder Bool
+ancestorWithData key targetValue =
+    JD.field ("data-" ++ key) JD.string |> JD.andThen (\elementValue -> JD.succeed <| elementValue == targetValue)
+
+
+ancestorNode : String -> JD.Decoder Bool
+ancestorNode nodeName =
+    JD.field ("nodeName") JD.string |> JD.andThen (\elementNodeName -> JD.succeed <| (String.toUpper elementNodeName) == (String.toUpper nodeName))
+
+
 {-| decode the mouse position relative to a parent element (values in px)
 -}
-xAndYRelativeTo : String -> JD.Decoder Position
-xAndYRelativeTo id =
-    mouseEventDecoder id |> JD.map relativeXAndY
+xAndYRelativeTo : ContainerPredicate -> JD.Decoder Position
+xAndYRelativeTo containerPredicate =
+    mouseEventDecoder containerPredicate |> JD.map relativeXAndY
 
 
 {-| decode the mouse x position relative to a parent element (values in px)
 -}
-xRelativeTo : String -> JD.Decoder Float
-xRelativeTo id =
-    mouseEventDecoder id |> JD.map relativeX
+xRelativeTo : ContainerPredicate -> JD.Decoder Float
+xRelativeTo containerPredicate =
+    mouseEventDecoder containerPredicate |> JD.map relativeX
 
 
 {-| decode the mouse y position relative to a parent element (values in px)
 -}
-yRelativeTo : String -> JD.Decoder Float
-yRelativeTo id =
-    mouseEventDecoder id |> JD.map relativeY
+yRelativeTo : ContainerPredicate -> JD.Decoder Float
+yRelativeTo container =
+    mouseEventDecoder container |> JD.map relativeY
 
 
 {-| decode the mouse y position as a portion of a parent element (values between 0 and 1)
 -}
-yAsPortionOf : String -> JD.Decoder Float
-yAsPortionOf id =
-    mouseEventDecoder id |> JD.map yPortion
+yAsPortionOf : ContainerPredicate -> JD.Decoder Float
+yAsPortionOf containerPredicate =
+    mouseEventDecoder containerPredicate |> JD.map yPortion
 
 
 {-| decode the mouse x position as a portion of a parent element (values between 0 and 1)
 -}
-xAsPortionOf : String -> JD.Decoder Float
-xAsPortionOf id =
-    mouseEventDecoder id |> JD.map xPortion
+xAsPortionOf : ContainerPredicate -> JD.Decoder Float
+xAsPortionOf containerPredicate =
+    mouseEventDecoder containerPredicate |> JD.map xPortion
 
 
 {-| decode the mouse position as a portion of a parent element (values between 0 and 1)
 -}
-xAndYAsPortionsOf : String -> JD.Decoder Position
-xAndYAsPortionsOf id =
-    mouseEventDecoder id |> JD.map xAndYPortions
+xAndYAsPortionsOf : ContainerPredicate -> JD.Decoder Position
+xAndYAsPortionsOf containerPredicate =
+    mouseEventDecoder containerPredicate |> JD.map xAndYPortions
 
 
 
@@ -137,12 +158,12 @@ yPortion mouseEvent =
 -- DECODERS
 
 
-mouseEventDecoder : String -> JD.Decoder MouseEvent
-mouseEventDecoder id =
+mouseEventDecoder : ContainerPredicate -> JD.Decoder MouseEvent
+mouseEventDecoder containerPredicate =
     JD.map3 MouseEvent
         (JD.field "srcElement" elementDecoder)
         (JD.at [] mousePositionDecoder)
-        (JD.field "srcElement" (containerValues id))
+        (JD.field "srcElement" (containerValues containerPredicate))
 
 
 mousePositionDecoder : JD.Decoder MousePosition
@@ -196,21 +217,21 @@ accumulateViaOffsetParentHelper valueDecoder cumulated =
         ]
 
 
-containerValues : String -> JD.Decoder Element
-containerValues containerId =
+containerValues : ContainerPredicate -> JD.Decoder Element
+containerValues containerPredicate =
     JD.oneOf
-        [ ifIdMatches containerId elementDecoder
-        , JD.field "parentElement" <| JD.lazy (\_ -> containerValues containerId)
+        [ ifThen containerPredicate elementDecoder
+        , JD.field "parentElement" <| JD.lazy (\_ -> containerValues containerPredicate)
         ]
 
 
-ifIdMatches : String -> JD.Decoder a -> JD.Decoder a
-ifIdMatches targetId decoder =
-    JD.field "id" JD.string
+ifThen : ContainerPredicate -> JD.Decoder a -> JD.Decoder a
+ifThen containerPredicate decoder =
+    containerPredicate
         |> JD.andThen
-            (\elementId ->
-                if elementId == targetId then
+            (\isTrue ->
+                if isTrue then
                     decoder
                 else
-                    (JD.fail "no match")
+                    JD.fail "no match"
             )
