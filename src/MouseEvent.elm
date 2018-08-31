@@ -161,7 +161,7 @@ yPortion mouseEvent =
 mouseEventDecoder : ContainerPredicate -> JD.Decoder MouseEvent
 mouseEventDecoder containerPredicate =
     JD.map3 MouseEvent
-        (JD.field "target" elementDecoder |> JD.map (Debug.log "src"))
+        (JD.field "target" elementDecoder)
         (JD.at [] mousePositionDecoder)
         (JD.field "target" (containerValues containerPredicate))
 
