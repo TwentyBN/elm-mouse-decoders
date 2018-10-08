@@ -1,21 +1,14 @@
-module MouseEvent
-    exposing
-        ( xAsPortionOf
-        , yAsPortionOf
-        , xAndYAsPortionsOf
-        , xRelativeTo
-        , yRelativeTo
-        , xAndYRelativeTo
-        , Position
-        , ancestorWithId
-        , ancestorNode
-        )
+module MouseEvent exposing
+    ( Position
+    , xAsPortionOf, yAsPortionOf, xAndYAsPortionsOf, xRelativeTo, yRelativeTo, xAndYRelativeTo
+    , ancestorNode, ancestorWithId
+    )
 
 {-| decoders for mouse events
 
 @docs Position
 
-@docs xAsPortionOf, yAsPortionOf , xAndYAsPortionsOf , xRelativeTo , yRelativeTo , xAndYRelativeTo
+@docs xAsPortionOf, yAsPortionOf, xAndYAsPortionsOf, xRelativeTo, yRelativeTo, xAndYRelativeTo
 
 -}
 
@@ -71,7 +64,7 @@ ancestorWithData key targetValue =
 
 ancestorNode : String -> JD.Decoder Bool
 ancestorNode nodeName =
-    JD.field ("nodeName") JD.string |> JD.andThen (\elementNodeName -> JD.succeed <| (String.toUpper elementNodeName) == (String.toUpper nodeName))
+    JD.field "nodeName" JD.string |> JD.andThen (\elementNodeName -> JD.succeed <| String.toUpper elementNodeName == String.toUpper nodeName)
 
 
 {-| decode the mouse position relative to a parent element (values in px)
@@ -129,12 +122,12 @@ relativeXAndY mouseEvent =
 
 relativeX : MouseEvent -> Float
 relativeX { src, mouse, container } =
-    (src.offsetLeft - container.offsetLeft + mouse.offsetX)
+    src.offsetLeft - container.offsetLeft + mouse.offsetX
 
 
 relativeY : MouseEvent -> Float
 relativeY { src, mouse, container } =
-    (src.offsetTop - container.offsetTop + mouse.offsetY)
+    src.offsetTop - container.offsetTop + mouse.offsetY
 
 
 xAndYPortions : MouseEvent -> Position
@@ -146,12 +139,12 @@ xAndYPortions mouseEvent =
 
 xPortion : MouseEvent -> Float
 xPortion mouseEvent =
-    (relativeX mouseEvent) / mouseEvent.container.offsetWidth
+    relativeX mouseEvent / mouseEvent.container.offsetWidth
 
 
 yPortion : MouseEvent -> Float
 yPortion mouseEvent =
-    (relativeY mouseEvent) / mouseEvent.container.offsetHeight
+    relativeY mouseEvent / mouseEvent.container.offsetHeight
 
 
 
@@ -176,9 +169,9 @@ mousePositionDecoder =
 elementDecoder : JD.Decoder Element
 elementDecoder =
     JD.map4 Element
-        (pageLeftDecoder)
+        pageLeftDecoder
         (JD.field "offsetWidth" JD.float)
-        (pageTopDecoder)
+        pageTopDecoder
         (JD.field "offsetHeight" JD.float)
 
 
@@ -232,6 +225,7 @@ ifThen containerPredicate decoder =
             (\isTrue ->
                 if isTrue then
                     decoder
+
                 else
                     JD.fail "no match"
             )

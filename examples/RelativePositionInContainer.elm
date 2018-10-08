@@ -3,8 +3,8 @@ module RelativePositionInContainer exposing (main)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on)
-import MouseEvent
 import Json.Decode as JD
+import MouseEvent
 
 
 type Msg
@@ -63,7 +63,7 @@ valueRow : String -> a -> Html Msg
 valueRow label value =
     tr []
         [ th [ style [ ( "padding-right", "10px" ) ] ] [ text label ]
-        , td [ style [ ( "text-align", "left" ) ] ] [ text <| toString <| value ]
+        , td [ style [ ( "text-align", "left" ) ] ] [ text <| String.fromFloat <| value ]
         ]
 
 
